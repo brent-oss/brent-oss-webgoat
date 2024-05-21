@@ -1,0 +1,53 @@
+name: Download Advanced Security Alerts
+
+on:
+  workflow_dispatch:
+
+jobs:
+  download-alerts:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+
+    - name: Download alerts
+      env:
+        USERNAME: ${{ secrets.GITHUB_USERNAME }}
+        TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        OWNER: 'repository-owner'
+        REPO: 'repository-name'
+      run: |
+        python -c "
+        import csv
+        import requests
+
+        username = '${{ env.USERNAME }}'
+        token = '${{ env.TOKEN }}'
+        owner = '${{ env.OWNER }}'
+        repo = '${{ env.REPO }}'
+
+        url = f'https://api.github.com/repos/{owner}/{repo}/code-scanning/alerts'
+        headers = {
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': f'token {token}'
+        }
+
+        response = requests.get(url, headers=headers)
+        alerts = response.json()
+
+        with open('alerts.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['ruleId', 'tool', 'severity', 'state'])
+            for alert in alerts:
+                writer.writerow([alert['rule_id'], alert['tool'], alert['severity'], alert['state']])"
