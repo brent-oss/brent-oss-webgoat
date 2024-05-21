@@ -31,23 +31,29 @@ jobs:
         python -c "
         import csv
         import requests
-
+      
         username = '${{ env.USERNAME }}'
         token = '${{ env.TOKEN }}'
         owner = '${{ env.OWNER }}'
         repo = '${{ env.REPO }}'
-
+      
         url = f'https://api.github.com/repos/{owner}/{repo}/code-scanning/alerts'
         headers = {
             'Accept': 'application/vnd.github.v3+json',
             'Authorization': f'token {token}'
         }
-
+      
         response = requests.get(url, headers=headers)
+      
+        if response.status_code != 200:
+            print(f'Status code: {response.status_code}')
+            print(f'Response text: {response.text}')
+            exit(1)
+      
         alerts = response.json()
-
+      
         with open('alerts.csv', 'w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(['ruleId', 'tool', 'severity', 'state'])
             for alert in alerts:
-                writer.writerow([alert['rule_id'], alert['tool'], alert['severity'], alert['state']])"
+                writer.writerow([alert['rule_id'], alert['tool'], alert['severity'], alert['state'])"
