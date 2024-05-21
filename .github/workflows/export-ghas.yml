@@ -56,4 +56,4 @@ jobs:
             writer = csv.writer(file)
             writer.writerow(['ruleId', 'tool', 'severity', 'state'])
             for alert in alerts:
-                writer.writerow([alert['rule_id'], alert['tool'], alert['severity'], alert['state'])"
+                writer.writerow(alert['rule_id'], alert['tool'], alert['severity'], alert['state'])"
